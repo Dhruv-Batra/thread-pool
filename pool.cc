@@ -23,15 +23,7 @@ void* thread_compute(void* data_arg){
     bool is_stop = false;
     while(!is_stop){
         pthread_mutex_lock(stop_lock);
-            is_stop = *stop;
-            //assign thread id to task
-            while (it != task_map->end()) {
-                if(it->first==item){
-                    it->second.second=*thread_id;
-                    break;
-                }
-                it++;
-            }
+        is_stop = *stop;
         pthread_mutex_unlock(stop_lock);
         pthread_mutex_lock(lock);
         while ((*task_queue).empty()){
@@ -39,7 +31,15 @@ void* thread_compute(void* data_arg){
         }
         std::string item = (*task_queue).front();
         (*task_queue).pop_front();
+        //assign thread id to task
         auto it = task_map->begin();
+        while (it != task_map->end()) {
+            if(it->first==item){
+                it->second.second=*thread_id;
+                break;
+            }
+            it++;
+        }
         Task* item_function = (*task_map)[item].first;
         if (item_function != nullptr){
             item_function->Run();
@@ -103,7 +103,6 @@ void ThreadPool::SubmitTask(const std::string &name, Task* task) {
 }
 
 void ThreadPool::WaitForTask(const std::string &name) {
-    pthread_mutex_lock(stop_lock);
      int thread_index = task_map[name].second;
      if(thread_index<0){
         return;
