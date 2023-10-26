@@ -1,10 +1,13 @@
 #ifndef POOL_H_
+#define POOL_H_
 #include <string>
 #include <pthread.h>
 #include <deque>
 #include <vector>
 #include <unordered_map>
 #include <utility>
+
+struct thread_data;
 
 class Task {
 public:
@@ -15,21 +18,25 @@ public:
 };
 
 class ThreadPool {
-private:
-    vector<pthread_t*> thread_array;
-    deque<string> task_queue;
-    unordered_map<std::string, pair<Task*, int> > task_map;
+public:
+    std::vector<pthread_t*> thread_array;
+    std::deque<std::string> task_queue;
+    std::unordered_map<std::string, std::pair<Task*, int>> task_map;
     pthread_mutex_t lock;
-    vector<pthread_mutex_t> task_locks;
-    vector<pthread_cond_t> conds;
-    vector<int> thread_ids;
+    pthread_mutex_t stop_lock;
     pthread_cond_t data_ready;
+    std::vector<pthread_mutex_t> task_locks;
+    std::vector<pthread_cond_t> conds;
+    std::vector<int> thread_ids;
+    int thread_num_pool;
     bool stop;
     static void* worker(void* arg);
 
-public:
+    
     ThreadPool(int num_threads);
-    void* thread_compute();
+    ~ThreadPool();
+    std::vector<thread_data*> datum;
+    // void* thread_compute(void* data_arg);
     // Submit a task with a particular name.
     void SubmitTask(const std::string &name, Task *task);
  
@@ -40,6 +47,11 @@ public:
     // You may assume that SubmitTask() is not caled after this is called.
     void Stop();
 
+};
+
+struct thread_data{
+    int thread_id;
+    ThreadPool* pool;
 };
 
 #endif
