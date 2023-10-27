@@ -5,9 +5,10 @@
 #include <deque>
 #include <vector>
 #include <unordered_map>
-#include <utility>
+#include <utility>  
 
 struct thread_data;
+
 
 class Task {
 public:
@@ -17,16 +18,23 @@ public:
     virtual void Run() = 0;  // implemented by subclass
 };
 
+struct TaskInfo{
+    Task* task;
+    int t_id;
+    pthread_cond_t* completed_task;
+    pthread_mutex_t* mutech;
+};
 class ThreadPool {
 public:
     std::vector<pthread_t*> thread_array;
     std::deque<std::string> task_queue;
-    std::unordered_map<std::string, std::pair<Task*, int>> task_map;
+    std::unordered_map<std::string, struct TaskInfo> task_map;
     pthread_mutex_t lock;
     pthread_mutex_t stop_lock;
+    pthread_mutex_t task_map_lock;
     pthread_cond_t data_ready;
-    std::vector<pthread_mutex_t> task_locks;
-    std::vector<pthread_cond_t> conds;
+    std::vector<pthread_mutex_t*> task_locks;
+    std::vector<pthread_cond_t*> conds;
     std::vector<int> thread_ids;
     int thread_num_pool;
     bool stop;
