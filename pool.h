@@ -6,10 +6,12 @@
 #include <vector>
 #include <deque>
 #include <unordered_map>
+#include <atomic>
+
 
 class Task {
 public:
-    bool completed;
+    std::atomic<bool> completed;
     pthread_mutex_t task_lock;
     pthread_cond_t task_ready;
     Task();
@@ -26,8 +28,7 @@ public:
     pthread_cond_t data_ready; //to identify if data on deque
     std::vector<pthread_t*> thread_list; //vector of threads needed to delete threads
     pthread_mutex_t stop_lock; //protect stop bool
-    pthread_mutex_t map_lock; //protect stop bool
-    bool is_stop;
+    std::atomic<bool> is_stop;
     std::deque<std::string> task_queue;
 
     ThreadPool(int num_threads);
