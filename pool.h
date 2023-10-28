@@ -30,6 +30,7 @@ public:
     pthread_mutex_t stop_lock; //protect stop bool
     std::atomic<bool> is_stop;
     std::deque<std::string> task_queue;
+    //std::vector<Task*> delete_task_list;
 
     ThreadPool(int num_threads);
 

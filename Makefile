@@ -25,7 +25,7 @@ pool-test: pool-test.o libpool.a
 pool-test-tsan: pool-test-tsan.o libpool-tsan.a
 	$(CXX) $(CXXFLAGS_TSAN) -o $@ $^ -lpthread
 
-SUBMIT_FILENAME=pool-submission-$(shell date +%Y%m%d%H%M%S).tar.gz
+SUBMIT_FILENAME=bca2nk.db3sgv.pool-submission-$(shell date +%Y%m%d%H%M%S).tar.gz
 
 submit:
 	tar -zcf $(SUBMIT_FILENAME) $(wildcard *.cc *.h *.hh *.H *.cpp *.C *.c *.txt *.md *.pdf) Makefile 

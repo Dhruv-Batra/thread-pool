@@ -66,14 +66,19 @@ void ThreadPool::SubmitTask(const std::string &name, Task* task) {
 }
 
 void ThreadPool::WaitForTask(const std::string &name) {
-    pthread_mutex_lock(&(task_map[name]->task_lock));
-    while(!task_map[name]->completed){
-        pthread_cond_wait(&(task_map[name]->task_ready), &(task_map[name]->task_lock));
+    pthread_mutex_lock(&queue_lock);
+    Task* waiting_task = task_map[name];
+    pthread_mutex_unlock(&queue_lock);
+
+    pthread_mutex_lock(&(waiting_task->task_lock));
+    while(!waiting_task->completed){
+        pthread_cond_wait(&(waiting_task->task_ready), &(waiting_task->task_lock));
     }
-    pthread_mutex_unlock(&(task_map[name]->task_lock));
+    pthread_mutex_unlock(&(waiting_task->task_lock));
     
     pthread_mutex_lock(&queue_lock);
-    delete task_map[name];
+    //delete_task_list.push_back(waiting_task);
+    delete waiting_task;
     task_map.erase(name);
     pthread_mutex_unlock(&queue_lock);
 }
@@ -90,10 +95,16 @@ ThreadPool::~ThreadPool(){
     for(int i=0; i<num_threads_pool; i++){
         delete thread_list[i];
     }
+    pthread_mutex_lock(&queue_lock);
+    for (auto& pair : task_map) {
+        delete pair.second;
+    }
+    pthread_mutex_unlock(&queue_lock);
+
+
     pthread_mutex_destroy(&queue_lock);
+
     pthread_cond_destroy(&data_ready);
-    // for (auto& pair : task_map) {
-    //     delete pair.second;
-    // }
-    // task_map.clear();
+
+    task_map.clear();
 }
